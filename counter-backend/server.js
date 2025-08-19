@@ -26,7 +26,7 @@ app.post('/api/upcounter', (req, res) => {
 
 // Serve the counter page
 app.get('/counter', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'counter.html'));
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 // Health check endpoint
