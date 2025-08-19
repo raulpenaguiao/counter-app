@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Counter</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        .container {
+            text-align: center;
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        #counter-value {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #333;
+            margin: 1rem 0;
+            padding: 1rem;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+            min-width: 100px;
+            display: inline-block;
+        }
+        button {
+            font-size: 1.2rem;
+            padding: 1rem 2rem;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        .error {
+            color: red;
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Counter App</h1>
+        <div id="counter-value">Loading...</div>
+        <button id="increment-btn" onclick="incrementCounter()">Increment Counter</button>
+        <div id="error-message" class="error"></div>
+    </div>
+
+    <script>
+        let isLoading = false;
+
+        // Fetch current counter value
+        async function fetchCounter() {
+            try {
+                const response = await fetch('/api/counter');
+                const data = await response.json();
+                document.getElementById('counter-value').textContent = data.value;
+                document.getElementById('error-message').textContent = '';
+            } catch (error) {
+                document.getElementById('error-message').textContent = 'Error fetching counter value';
+                console.error('Error:', error);
+            }
+        }
+
+        // Increment counter
+        async function incrementCounter() {
+            if (isLoading) return;
+            
+            isLoading = true;
+            const button = document.getElementById('increment-btn');
+            button.disabled = true;
+            button.textContent = 'Incrementing...';
+            
+            try {
+                const response = await fetch('/api/upcounter', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById('counter-value').textContent = data.newValue;
+                    document.getElementById('error-message').textContent = '';
+                } else {
+                    document.getElementById('error-message').textContent = 'Error incrementing counter';
+                }
+            } catch (error) {
+                document.getElementById('error-message').textContent = 'Error incrementing counter';
+                console.error('Error:', error);
+            } finally {
+                isLoading = false;
+                button.disabled = false;
+                button.textContent = 'Increment Counter';
+            }
+        }
+
+        // Load counter value when page loads
+        document.addEventListener('DOMContentLoaded', fetchCounter);
+
+        // Refresh counter every 3 seconds to show updates from other users
+        setInterval(fetchCounter, 3000);
+    </script>
+</body>
+</html>
